@@ -8,6 +8,16 @@ namespace Backend.Services
   {
     private static readonly string Alphabet = "абвгдеёжзийклмнопрстуфхцчшщъыьэюя";
     private static readonly Random random = new Random();
+    private static readonly Dictionary<char, double> RussianLetterFrequencies = new Dictionary<char, double>
+    {
+      {'о', 0.10983}, {'е', 0.08483}, {'а', 0.07998}, {'и', 0.07367}, {'н', 0.06700},
+      {'т', 0.06318}, {'с', 0.05473}, {'р', 0.04746}, {'в', 0.04533}, {'л', 0.04343},
+      {'к', 0.03486}, {'м', 0.03203}, {'д', 0.02977}, {'п', 0.02804}, {'у', 0.02615},
+      {'я', 0.02001}, {'ы', 0.01898}, {'ь', 0.01735}, {'г', 0.01687}, {'з', 0.01641},
+      {'б', 0.01592}, {'ч', 0.01450}, {'й', 0.01208}, {'х', 0.00966}, {'ж', 0.00940},
+      {'ш', 0.00718}, {'ю', 0.00639}, {'ц', 0.00486}, {'щ', 0.00361}, {'э', 0.00331},
+      {'ф', 0.00267}, {'ъ', 0.00037}, {'ё', 0.00013}
+    };
 
     public string Encrypt(string text, string key)
     {
@@ -30,9 +40,35 @@ namespace Backend.Services
 
     public string HackCipher(string text)
     {
-      // TODO Implement hack cipher
+      var textFrequencies = CalculateFrequencies(text);
+      var sortedTextFrequencies = textFrequencies.OrderByDescending(kvp => kvp.Value).Select(kvp => kvp.Key).ToList();
+      var sortedRussianFrequencies = RussianLetterFrequencies.OrderByDescending(kvp => kvp.Value).Select(kvp => kvp.Key).ToList();
 
-      return "Взлом невозможен в демонстрационной версии";
+      foreach (var kvp in textFrequencies)
+      {
+        Console.WriteLine($"{kvp.Key}: {kvp.Value}");
+      }
+      foreach (var kvp in RussianLetterFrequencies)
+      {
+        Console.WriteLine($"{kvp.Key}: {kvp.Value}");
+      }
+
+
+
+      var hackMap = new Dictionary<char, char>();
+
+
+      for (int i = 0; i < sortedTextFrequencies.Count; i++)
+      {
+        hackMap[sortedTextFrequencies[i]] = sortedRussianFrequencies[i];
+      }
+
+      Console.WriteLine("Hack map:");
+      foreach (var kvp in hackMap)
+      {
+        Console.WriteLine($"{kvp.Key} -> {kvp.Value}");
+      }
+      return new string(text.Select(c => hackMap.ContainsKey(c) ? hackMap[c] : c).ToArray());
     }
 
     private Dictionary<char, char> CreateKeyMap(string alphabet, string key)
@@ -43,6 +79,32 @@ namespace Backend.Services
         keyMap[alphabet[i]] = key[i];
       }
       return keyMap;
+    }
+
+    private Dictionary<char, double> CalculateFrequencies(string text)
+    {
+      var frequencies = new Dictionary<char, double>();
+      int totalLetters = 0;
+
+      foreach (var c in text)
+      {
+        if (Alphabet.Contains(c))
+        {
+          if (!frequencies.ContainsKey(c))
+          {
+            frequencies[c] = 0;
+          }
+          frequencies[c]++;
+          totalLetters++;
+        }
+      }
+
+      foreach (var key in frequencies.Keys.ToList())
+      {
+        frequencies[key] = Math.Round(frequencies[key] / totalLetters, 5);
+      }
+
+      return frequencies;
     }
   }
 }
