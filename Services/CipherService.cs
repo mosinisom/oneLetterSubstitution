@@ -44,13 +44,9 @@ namespace Backend.Services
       var sortedTextFrequencies = textFrequencies.OrderByDescending(kvp => kvp.Value).Select(kvp => kvp.Key).ToList();
       var sortedRussianFrequencies = RussianLetterFrequencies.OrderByDescending(kvp => kvp.Value).Select(kvp => kvp.Key).ToList();
 
-      foreach (var kvp in textFrequencies)
+      for(int i = 0; i < sortedTextFrequencies.Count; i++)
       {
-        Console.WriteLine($"{kvp.Key}: {kvp.Value}");
-      }
-      foreach (var kvp in RussianLetterFrequencies)
-      {
-        Console.WriteLine($"{kvp.Key}: {kvp.Value}");
+        Console.WriteLine($"{textFrequencies[sortedTextFrequencies[i]]} <- {sortedTextFrequencies[i]} : {sortedRussianFrequencies[i]} -> {RussianLetterFrequencies[sortedRussianFrequencies[i]]}");
       }
 
 
@@ -63,11 +59,6 @@ namespace Backend.Services
         hackMap[sortedTextFrequencies[i]] = sortedRussianFrequencies[i];
       }
 
-      Console.WriteLine("Hack map:");
-      foreach (var kvp in hackMap)
-      {
-        Console.WriteLine($"{kvp.Key} -> {kvp.Value}");
-      }
       return new string(text.Select(c => hackMap.ContainsKey(c) ? hackMap[c] : c).ToArray());
     }
 
@@ -101,7 +92,7 @@ namespace Backend.Services
 
       foreach (var key in frequencies.Keys.ToList())
       {
-        frequencies[key] = Math.Round(frequencies[key] / totalLetters, 5);
+        frequencies[key] = Math.Round(frequencies[key] / totalLetters, 8);
       }
 
       return frequencies;

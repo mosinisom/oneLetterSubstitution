@@ -37,16 +37,23 @@ namespace Backend.Handlers
       Console.WriteLine($"Received message: {receivedMessage}");
       var request = JsonSerializer.Deserialize<RequestMessage>(receivedMessage);
 
-      string responseMessage = request.Action switch
+      string responseText = request.Action switch
       {
         "generateKey" => _cipherService.GenerateKey(),
-        "encrypt" => _cipherService.Encrypt(request.Text, request.Key),
-        "decrypt" => _cipherService.Decrypt(request.Text, request.Key),
-        "hack" => _cipherService.HackCipher(request.Text),
+        "encrypt" => _cipherService.Encrypt(request.Text.ToLower(), request.Key),
+        "decrypt" => _cipherService.Decrypt(request.Text.ToLower(), request.Key),
+        "hack" => _cipherService.HackCipher(request.Text.ToLower()),
         _ => throw new InvalidOperationException("Unknown action")
       };
 
-      var responseBuffer = Encoding.UTF8.GetBytes(responseMessage);
+      var responseMessage = new ResponseMessage
+      {
+        Action = request.Action,
+        Response = responseText
+      };
+
+      var responseJson = JsonSerializer.Serialize(responseMessage);
+      var responseBuffer = Encoding.UTF8.GetBytes(responseJson);
       await webSocket.SendAsync(new ArraySegment<byte>(responseBuffer), WebSocketMessageType.Text, true, CancellationToken.None);
     }
   }

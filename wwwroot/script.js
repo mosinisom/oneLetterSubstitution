@@ -1,57 +1,70 @@
 let socket;
 
 document.addEventListener("DOMContentLoaded", function () {
+  initializeWebSocket();
+});
 
+function initializeWebSocket() {
   socket = new WebSocket("ws://localhost:5000/ws");
-  
+
   socket.onopen = function () {
     console.log("Соединение установлено");
   };
 
-});
+  socket.onmessage = function (event) {
+    let response = JSON.parse(event.data);
+    if (response.action === "generateKey") {
+      document.getElementById("key").value = response.response;
+    } else {
+      document.getElementById("output").textContent = response.response;
+    }
+  };
+
+  socket.onclose = function () {
+    console.log("Соединение закрыто, повторное подключение...");
+    setTimeout(initializeWebSocket, 100); 
+  };
+
+  socket.onerror = function (error) {
+    console.error("Ошибка WebSocket:", error);
+  };
+}
+
+function sendMessage(message) {
+  if (socket.readyState === WebSocket.OPEN) {
+    console.log("Sending message:", JSON.stringify(message));
+    socket.send(JSON.stringify(message));
+  } else {
+    console.error("WebSocket не в состоянии OPEN. Текущее состояние:", socket.readyState);
+  }
+}
 
 function encrypt() {
   let text = document.getElementById("inputText").value;
   let key = document.getElementById("key").value;
+  if (key === "") {
+    generateKey();
+  }
+  
   let message = { action: "encrypt", text: text, key: key };
-  console.log("Sending message:", JSON.stringify(message));
-  socket.send(JSON.stringify(message));
-
-  socket.onmessage = function (event) {
-    document.getElementById("output").textContent = event.data;
-  };
+  sendMessage(message);
 }
 
 function decrypt() {
   let text = document.getElementById("inputText").value;
   let key = document.getElementById("key").value;
   let message = { action: "decrypt", text: text, key: key };
-  console.log("Sending message:", JSON.stringify(message));
-  socket.send(JSON.stringify(message));
-
-  socket.onmessage = function (event) {
-    document.getElementById("output").textContent = event.data;
-  };
+  sendMessage(message);
 }
 
 function hack() {
   let text = document.getElementById("inputText").value;
   text = text.toLowerCase();
   let message = { action: "hack", text: text };
-  console.log("Sending message:", JSON.stringify(message));
-  socket.send(JSON.stringify(message));
-
-  socket.onmessage = function (event) {
-    document.getElementById("output").textContent = event.data;
-  };
+  sendMessage(message);
 }
 
 function generateKey() {
   let message = { action: "generateKey" };
-  console.log("Sending message:", JSON.stringify(message));
-  socket.send(JSON.stringify(message));
-
-  socket.onmessage = function (event) {
-    document.getElementById("key").value = event.data;
-  };
+  sendMessage(message);
 }
