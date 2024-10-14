@@ -28,7 +28,7 @@ namespace Backend.Services
     public string Decrypt(string text, string key)
     {
       var keyMap = CreateKeyMap(Alphabet, key);
-      var reverseKeyMap = keyMap.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
+      var reverseKeyMap = CreateReverseKeyMap(keyMap);
       return new string(text.Select(c => reverseKeyMap.ContainsKey(c) ? reverseKeyMap[c] : c).ToArray());
     }
 
@@ -38,38 +38,67 @@ namespace Backend.Services
       return new string(shuffledAlphabet);
     }
 
-    public string HackCipher(string text)
+    public string HackKey(string text)
     {
       var textFrequencies = CalculateFrequencies(text);
       var sortedTextFrequencies = textFrequencies.OrderByDescending(kvp => kvp.Value).Select(kvp => kvp.Key).ToList();
       var sortedRussianFrequencies = RussianLetterFrequencies.OrderByDescending(kvp => kvp.Value).Select(kvp => kvp.Key).ToList();
 
-      for(int i = 0; i < sortedTextFrequencies.Count; i++)
-      {
-        Console.WriteLine($"{textFrequencies[sortedTextFrequencies[i]]} <- {sortedTextFrequencies[i]} : {sortedRussianFrequencies[i]} -> {RussianLetterFrequencies[sortedRussianFrequencies[i]]}");
-      }
-
-
-
       var hackMap = new Dictionary<char, char>();
-
 
       for (int i = 0; i < sortedTextFrequencies.Count; i++)
       {
         hackMap[sortedTextFrequencies[i]] = sortedRussianFrequencies[i];
       }
 
-      return new string(text.Select(c => hackMap.ContainsKey(c) ? hackMap[c] : c).ToArray());
+      // Создание ключа на основе карты замены
+      var hackedKey = new char[Alphabet.Length];
+      var usedChars = new HashSet<char>(hackMap.Values);
+
+      for (int i = 0; i < Alphabet.Length; i++)
+      {
+        if (hackMap.ContainsKey(Alphabet[i]))
+        {
+          hackedKey[i] = hackMap[Alphabet[i]];
+        }
+        else
+        {
+          // Найти первый неиспользованный символ
+          hackedKey[i] = Alphabet.First(c => !usedChars.Contains(c));
+          usedChars.Add(hackedKey[i]);
+        }
+      }
+
+      return new string(hackedKey);
     }
 
     private Dictionary<char, char> CreateKeyMap(string alphabet, string key)
     {
+      if (key.Distinct().Count() != key.Length)
+      {
+        throw new ArgumentException("Key contains duplicate characters.");
+      }
+
       var keyMap = new Dictionary<char, char>();
       for (int i = 0; i < alphabet.Length; i++)
       {
         keyMap[alphabet[i]] = key[i];
       }
       return keyMap;
+    }
+
+    private Dictionary<char, char> CreateReverseKeyMap(Dictionary<char, char> keyMap)
+    {
+      var reverseKeyMap = new Dictionary<char, char>();
+      foreach (var kvp in keyMap)
+      {
+        if (reverseKeyMap.ContainsKey(kvp.Value))
+        {
+          throw new ArgumentException($"Duplicate value found in key map: {kvp.Value}");
+        }
+        reverseKeyMap[kvp.Value] = kvp.Key;
+      }
+      return reverseKeyMap;
     }
 
     private Dictionary<char, double> CalculateFrequencies(string text)

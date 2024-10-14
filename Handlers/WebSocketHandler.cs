@@ -42,7 +42,7 @@ namespace Backend.Handlers
         "generateKey" => _cipherService.GenerateKey(),
         "encrypt" => _cipherService.Encrypt(request.Text.ToLower(), request.Key),
         "decrypt" => _cipherService.Decrypt(request.Text.ToLower(), request.Key),
-        "hack" => _cipherService.HackCipher(request.Text.ToLower()),
+        "hack" => _cipherService.HackKey(request.Text.ToLower()),
         _ => throw new InvalidOperationException("Unknown action")
       };
 

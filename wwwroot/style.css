@@ -35,3 +35,18 @@ button {
 button:hover {
   background-color: #45a049;
 }
+
+#swap {
+  display: none;
+  align-items: center;
+}
+
+#swap h4 {
+  margin-right: 15px;
+}
+
+#letter1,
+#letter2 {
+  width: 70px;
+  margin-right: 10px;
+}
