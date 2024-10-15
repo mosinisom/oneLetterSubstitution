@@ -67,7 +67,6 @@ function hack() {
   let message = { action: "hack", text: text };
   sendMessage(message);
 
-  // Показать div с id swap
   document.getElementById("swap").style.display = "flex";
 }
 

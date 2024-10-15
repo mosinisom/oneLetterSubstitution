@@ -51,7 +51,6 @@ namespace Backend.Services
         hackMap[sortedTextFrequencies[i]] = sortedRussianFrequencies[i];
       }
 
-      // Создание ключа на основе карты замены
       var hackedKey = new char[Alphabet.Length];
       var usedChars = new HashSet<char>(hackMap.Values);
 
@@ -63,7 +62,6 @@ namespace Backend.Services
         }
         else
         {
-          // Найти первый неиспользованный символ
           hackedKey[i] = Alphabet.First(c => !usedChars.Contains(c));
           usedChars.Add(hackedKey[i]);
         }

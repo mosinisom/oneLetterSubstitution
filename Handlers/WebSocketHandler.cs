@@ -22,7 +22,7 @@ namespace Backend.Handlers
     public async Task HandleAsync(HttpContext context)
     {
       WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
-      var buffer = new byte[1024 * 16]; // Увеличиваем размер буфера
+      var buffer = new byte[1024 * 16];
       WebSocketReceiveResult result;
       var receivedData = new List<byte>();
 
